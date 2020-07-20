@@ -1,14 +1,17 @@
 {
-  "name": "be_challenge",
-  "version": "1.0.0",
-  "description": "",
-  "main": "incorrect.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "author": "Sebastian Wigstroem",
-  "license": "ISC",
-  "dependencies": {
-    "mongoose": "^5.9.20"
-  }
+    "name": "be_challenge",
+    "version": "1.0.0",
+    "description": "",
+    "main": "incorrect.js",
+    "scripts": {
+        "test": "jest ./tests"
+    },
+    "author": "Sebastian Wigstroem",
+    "license": "ISC",
+    "dependencies": {
+        "mongoose": "^5.9.20"
+    },
+    "devDependencies": {
+        "jest": "^26.1.0"
+    }
 }
