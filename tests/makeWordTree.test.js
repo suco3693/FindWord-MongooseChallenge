@@ -2,6 +2,10 @@ const find_words = require('../find_words');
 
 function traverseTreeDFS(node, idx, sampleValues) {
     expect(node.value).toBe(sampleValues[idx]);
+    Object.keys(node.childrenValues).forEach((key) => {
+        let idx = node.childrenValues[key];
+        expect(key).toEqual(node.children[idx].value);
+    });
     if (idx === sampleValues.length - 1) {
         expect(node.isWord).toBe(true);
     } else {
@@ -29,12 +33,13 @@ function traverseTreeBFS(node, expectedEnd, expectedValues) {
         expect(val).toBe(bsfValues[idx]);
     });
 }
-describe('find_words Test Suite', () => {
-    test('Node makes a new node with val and empty chldren', () => {
+describe('find_words.makeWordTree Test Suite', () => {
+    test('Node makes a new node with val, empty chldren array, and empty childValues object', () => {
         let node = new find_words.Node('a');
         expect(node.value).toBe('a');
         expect(node.children.length).toBe(0);
         expect(node.isWord).toBe(false);
+        expect(Object.keys(node.childrenValues).length).toBe(0);
     });
     test('Node converts letter to lowercase', () => {
         let node = new find_words.Node('A');
@@ -44,7 +49,7 @@ describe('find_words Test Suite', () => {
     });
     test('makeWordTree makes 1 word dictionary into a tree and has proper isWord boolean at only end', () => {
         let sampleDic = new Set();
-        sampleDic.add('cat');
+        sampleDic.add('CAT');
         let sampleValues = ['', 'c', 'a', 't'];
         let wordTree = find_words.makeWordTree(sampleDic);
         traverseTreeDFS(wordTree, 0, sampleValues);

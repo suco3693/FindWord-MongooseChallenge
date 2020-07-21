@@ -53,11 +53,132 @@
 					remove that branch from wordTree
 				
 		return output
+	
+
+	Method
+		get wordTree
+		have var that is an emptySet (foundWords)
+		have var startLetters = wordTree.children.map((child)=> child.val)
+		loop through rows of wordGrid
+			loop through col of wordGrid
+				if wordGrid[row][col] is in startLetters
+					wordSearch(row, col, childNode)
 		
  */
 
+function WordSearch(wordGrid, dictionary) {
+    this.wordTree = makeWordTree(dictionary);
+    this.wordGrid = convertGridToLowerCase(wordGrid);
+    this.foundWords = new Set();
+}
+WordSearch.prototype.findWords = function () {
+    let startLetters = this.wordTree.children.map((child) => child.value);
+    let startLetterIdx = null;
+    for (var row = 0; row < this.wordGrid.length; row++) {
+        for (var col = 0; col < this.wordGrid[0].length; col++) {
+            startLetterIdx = startLetters.indexOf(this.wordGrid[row][col]);
+            if (startLetterIdx !== -1) {
+                // traverseGrid(row, col, wordTree);
+                this.traverse(
+                    row,
+                    col,
+                    this.wordTree.children[startLetterIdx].value,
+                    this.wordTree.children[startLetterIdx],
+                    new Set(),
+                );
+            }
+        }
+    }
+};
+/*
+I (row, col) int that represent row and col of this.wordGrid
+	(currentWord) string
+	(seenIdx) a set of seen Idx
+	(currentNode) the current node in this.wordTree
+O : none
+SE: add (currentWord) to this.foundWords
+C: once (currentWord) is found delete from this.wordTree
+EC
+A
+
+
+Method
+	check if currentNode.isWord is true
+		if so add currentWord to this.foundWords
+			remove currentWord from this.wordTree
+	add row-col to seen
+
+	go all this directions if not in seen and possible and letter is in currentNode.childrenValues
+		directions
+			up
+			up right
+			right
+			down right
+			down
+			down left
+			left
+			up left
+
+*/
+WordSearch.prototype.traverse = function (row, col, currentWord, currentNode, seen) {
+    if (seen.has(`${row}-${col}`)) {
+        return;
+    }
+    if (currentNode.isWord) {
+        this.foundWords.add(currentWord);
+    }
+    seen.add(`${row}-${col}`);
+    //directions
+    //goUp
+    if (row > 0) {
+        //go just Up
+        this.moveDownTree(row - 1, col, currentWord, currentNode, seen);
+        if (col < this.wordGrid[0].length) {
+            this.moveDownTree(row - 1, col + 1, currentWord, currentNode, seen);
+        }
+        //goLeft
+        if (col > 0) {
+            this.moveDownTree(row - 1, col - 1, currentWord, currentNode, seen);
+        }
+        //go Up Right
+        //go Up Left
+    }
+    //goRight
+    if (col < this.wordGrid[0].length - 1) {
+        this.moveDownTree(row, col + 1, currentWord, currentNode, seen);
+    }
+    //goLeft
+    if (col > 0) {
+        this.moveDownTree(row, col - 1, currentWord, currentNode, seen);
+    }
+    //goDown
+    if (row < this.wordGrid.length - 1) {
+        //go just Up
+        this.moveDownTree(row + 1, col, currentWord, currentNode, seen);
+        if (col < this.wordGrid[0].length) {
+            this.moveDownTree(row + 1, col + 1, currentWord, currentNode, seen);
+        }
+        //goLeft
+        if (col > 0) {
+            this.moveDownTree(row + 1, col - 1, currentWord, currentNode, seen);
+        }
+        //go Up Right
+        //go Up Left
+    }
+};
+WordSearch.prototype.moveDownTree = function (row, col, currentWord, currentNode, seen) {
+    if (currentNode.childrenValues[this.wordGrid[row][col]] !== undefined) {
+        let childIdx = currentNode.childrenValues[this.wordGrid[row][col]];
+        currentNode = currentNode.children[childIdx];
+        currentWord += currentNode.value;
+        this.traverse(row, col, currentWord, currentNode, seen);
+    }
+};
 async function findWords(wordGrid, dictionary) {
-    // TODO: Implement me
+    let wordSearch = new WordSearch(wordGrid, dictionary);
+    wordSearch.findWords();
+
+    return wordSearch.foundWords;
 }
 /*
 I: (dictionary) a Set of words
@@ -82,10 +203,16 @@ Method
 					currentNode = that child
 	})
 */
+
+/**********************
+ *
+ * Helper Functions
+ */
 function Node(value) {
     this.value = value.toLowerCase();
     this.isWord = false;
     this.children = [];
+    this.childrenValues = {};
 }
 function findChildNode(letter, children) {
     let child = null;
@@ -109,6 +236,7 @@ function makeWordTree(dictionary) {
             if (childIdx < 0) {
                 newNode = new Node(word[idx]);
                 currentNode.children.push(newNode);
+                currentNode.childrenValues[newNode.value] = Object.keys(currentNode.childrenValues).length;
                 currentNode = newNode;
             } else {
                 currentNode = currentNode.children[childIdx];
@@ -127,3 +255,7 @@ module.exports = {
     makeWordTree,
     Node,
 };
+
+function convertGridToLowerCase(grid) {
+    return grid.map((row) => row.map((col) => col.toLowerCase()));
+}
