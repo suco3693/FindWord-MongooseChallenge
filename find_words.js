@@ -23,54 +23,19 @@
  * @returns {Set} All words from the dictionary that were found
  */
 
-/*
-	Input: (wordGrid) a 2D array of letters
-		(dictionary) a Set of words 
-	Output: (foundWords) a Set of words that were found in dictionary
-	Constraints: case of letters/ words should not matter
-				words can be found
-					-horizontally
-					-vertically
-					-diginally 
-				only need to find word once
-
-	Edge Cases: wordGrid is empty
-				dictionary is empty
-
-	Assumptions:
-		all rows of grid are the same length
-		Only can use each letter of grid once
-		case don't matter for words
-
-	Pseduo
-		turn (dictionary) into a tree (wordTree)
-			with leafs being True for words
-			
-		write function to loop through wordGrid
-			check if word is in (wordTree)
-				if so 
-					add to output
-					remove that branch from wordTree
-				
-		return output
-	
-
-	Method
-		get wordTree
-		have var that is an emptySet (foundWords)
-		have var startLetters = wordTree.children.map((child)=> child.val)
-		loop through rows of wordGrid
-			loop through col of wordGrid
-				if wordGrid[row][col] is in startLetters
-					wordSearch(row, col, childNode)
-		
+/****
+ *
+ * Constructor Function to set all data sets of problem together
  */
-
 function WordSearch(wordGrid, dictionary) {
     this.wordTree = makeWordTree(dictionary);
     this.wordGrid = convertGridToLowerCase(wordGrid);
     this.foundWords = new Set();
 }
+
+/*****
+ * Functionality to find first letter of words from dictionary in wordGrid
+ */
 WordSearch.prototype.findWords = function () {
     let startLetters = this.wordTree.children.map((child) => child.value);
     let startLetterIdx = null;
@@ -78,7 +43,6 @@ WordSearch.prototype.findWords = function () {
         for (var col = 0; col < this.wordGrid[0].length; col++) {
             startLetterIdx = startLetters.indexOf(this.wordGrid[row][col]);
             if (startLetterIdx !== -1) {
-                // traverseGrid(row, col, wordTree);
                 this.traverse(
                     row,
                     col,
@@ -90,58 +54,43 @@ WordSearch.prototype.findWords = function () {
         }
     }
 };
-/*
-I (row, col) int that represent row and col of this.wordGrid
-	(currentWord) string
-	(seenIdx) a set of seen Idx
-	(currentNode) the current node in this.wordTree
-O : none
-SE: add (currentWord) to this.foundWords
-C: once (currentWord) is found delete from this.wordTree
-EC
-A
 
-
-Method
-	check if currentNode.isWord is true
-		if so add currentWord to this.foundWords
-			remove currentWord from this.wordTree
-	add row-col to seen
-
-	go all this directions if not in seen and possible and letter is in currentNode.childrenValues
-		directions
-			up
-			up right
-			right
-			down right
-			down
-			down left
-			left
-			up left
-
-*/
+/****
+ *
+ * Functionality to traverse wordGrid and find words that match words in wordTree, which is a tree that represents dictionary
+ * Moves
+ * 	-Up
+ * 	-Up right
+ * 	-Up left
+ * 	-Right
+ * 	-Left
+ * 	-Down
+ * 	-Down Right
+ * 	-Down Left
+ */
 WordSearch.prototype.traverse = function (row, col, currentWord, currentNode, seen) {
     if (seen.has(`${row}-${col}`)) {
         return;
     }
     if (currentNode.isWord) {
         this.foundWords.add(currentWord);
+        removeWordFromTree(currentWord, this.wordTree);
     }
+
     seen.add(`${row}-${col}`);
-    //directions
     //goUp
     if (row > 0) {
         //go just Up
         this.moveDownTree(row - 1, col, currentWord, currentNode, seen);
+        //goRight
         if (col < this.wordGrid[0].length) {
             this.moveDownTree(row - 1, col + 1, currentWord, currentNode, seen);
         }
-        //goLeft
+        //go Left
         if (col > 0) {
             this.moveDownTree(row - 1, col - 1, currentWord, currentNode, seen);
         }
         //go Up Right
-        //go Up Left
     }
     //goRight
     if (col < this.wordGrid[0].length - 1) {
@@ -153,8 +102,9 @@ WordSearch.prototype.traverse = function (row, col, currentWord, currentNode, se
     }
     //goDown
     if (row < this.wordGrid.length - 1) {
-        //go just Up
+        //go just Down
         this.moveDownTree(row + 1, col, currentWord, currentNode, seen);
+        //goRight
         if (col < this.wordGrid[0].length) {
             this.moveDownTree(row + 1, col + 1, currentWord, currentNode, seen);
         }
@@ -162,10 +112,15 @@ WordSearch.prototype.traverse = function (row, col, currentWord, currentNode, se
         if (col > 0) {
             this.moveDownTree(row + 1, col - 1, currentWord, currentNode, seen);
         }
-        //go Up Right
-        //go Up Left
     }
+    seen.delete(`${row}-${col}`);
 };
+
+/***
+ *
+ *  Traversal function to match current letter in wordGrid to potential matches
+ *  in wordTree
+ */
 WordSearch.prototype.moveDownTree = function (row, col, currentWord, currentNode, seen) {
     if (currentNode.childrenValues[this.wordGrid[row][col]] !== undefined) {
         let childIdx = currentNode.childrenValues[this.wordGrid[row][col]];
@@ -174,39 +129,38 @@ WordSearch.prototype.moveDownTree = function (row, col, currentWord, currentNode
         this.traverse(row, col, currentWord, currentNode, seen);
     }
 };
+
+/*****
+ * Base Function that creates WordSearch then finds words from dictionary
+ *  in wordGrid
+ */
 async function findWords(wordGrid, dictionary) {
+    if (dictionary.size === 0 || !wordGrid.length || !wordGrid[0].length) {
+        return new Set();
+    }
     let wordSearch = new WordSearch(wordGrid, dictionary);
     wordSearch.findWords();
 
     return wordSearch.foundWords;
 }
-/*
-I: (dictionary) a Set of words
-O: (wordTree) a tree that represents all words
-C: each word in dictionary should end with True
-	words with similar start letters are combined
-	root has no value
-EC: 
-A
 
-Method
-	make base node with no value (baseNode)
-
-	loop through dictionary, dictionary.forEach((word)=>{
-		currentNode = baseNode
-		loop through letters of word 
-			check if that letter is child value of currentNode
-				if so go to that node
-				else
-					make new Node with that letter
-					add it to children of currentNode
-					currentNode = that child
-	})
-*/
-
-/**********************
+/*****************************
  *
- * Helper Functions
+ *  Helper function to set all items in grid to lowercase
+ */
+
+function convertGridToLowerCase(grid) {
+    return grid.map((row) => row.map((col) => col.toLowerCase()));
+}
+
+/**************************************************
+ *
+ * Helper Functions to make wordTree
+ */
+
+/***
+ *
+ *  Class Node to create Tree Nodes
  */
 function Node(value) {
     this.value = value.toLowerCase();
@@ -214,6 +168,12 @@ function Node(value) {
     this.children = [];
     this.childrenValues = {};
 }
+
+/****
+ *
+ * Function to find if treeNode.children includes a letter
+ * returns index of letter or -1
+ */
 function findChildNode(letter, children) {
     let child = null;
     for (var childIdx = 0; childIdx < children.length; childIdx++) {
@@ -224,6 +184,11 @@ function findChildNode(letter, children) {
     }
     return -1;
 }
+
+/******
+ *
+ * Base Function to make wordTree from dictionary of words
+ */
 function makeWordTree(dictionary) {
     let baseNode = new Node('');
 
@@ -232,7 +197,7 @@ function makeWordTree(dictionary) {
         let childIdx = null;
         let newNode = null;
         for (var idx = 0; idx < word.length; idx++) {
-            childIdx = findChildNode(word[idx], currentNode.children);
+            childIdx = findChildNode(word[idx].toLowerCase(), currentNode.children);
             if (childIdx < 0) {
                 newNode = new Node(word[idx]);
                 currentNode.children.push(newNode);
@@ -255,7 +220,3 @@ module.exports = {
     makeWordTree,
     Node,
 };
-
-function convertGridToLowerCase(grid) {
-    return grid.map((row) => row.map((col) => col.toLowerCase()));
-}

@@ -94,4 +94,18 @@ describe('find_words.makeWordTree Test Suite', () => {
         let wordTree = find_words.makeWordTree(sampleDic);
         traverseTreeBFS(wordTree, expectedEnd, expectedValues);
     });
+    test('makeWordTree makes 2 words, where one is a subword of other, into a tree with proper isWord tags', () => {
+        let sampleDic = new Set();
+        sampleDic.add('WOA');
+        sampleDic.add('WOAT');
+        sampleDic.add('WOATE');
+        let expectedValues = ['', 'w', 'o', 'a', 't', 'e'];
+        let expectedEnd = {
+            a: true,
+            t: true,
+            e: true,
+        };
+        let wordTree = find_words.makeWordTree(sampleDic);
+        traverseTreeBFS(wordTree, expectedEnd, expectedValues);
+    });
 });
