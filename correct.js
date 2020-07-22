@@ -32,8 +32,8 @@ async function pullPaymentsForUsers(users) {
         return result;
     }
     for (let user of users) {
-        let payments = await models.payment.find({ user: user });
-        result.push(payments.map((payment) => payment._id));
+        let payments = await models.payment.find({ user: user }).populate('user');
+        result.push(payments);
     }
     return result; // array of array with payments (the first array should contain payments for the first user)
 }
@@ -51,3 +51,32 @@ function convertToStr(num) {
     }
 }
 module.exports.convertToStr = convertToStr;
+
+/*
+ * Give the _id of the payment, return the payment
+ * and user objects associated with it.
+ * Sometimes the payment id might not match a payment.
+ */
+async function getPaymentWithUser(paymentId) {
+    let payment = await models.payment.findOne({ _id: paymentId }).populate('user');
+    return payment ? payment : null;
+}
+module.exports.getPaymentWithUser = getPaymentWithUser;
+
+/*
+ * Pulls all active payments for the users and returns an object
+ * mapping the user id to the user's payments (string to array).
+ * Note: userIds is passed in as an array of strings
+ *
+ * Note: Active
+ */
+async function getGroupedUserPmts(userIds) {
+    let result = {};
+    let payments = [];
+    for (const userId of userIds) {
+        payments = await models.payment.find({ user: userId, active: true });
+        result[userId] = payments;
+    }
+    return result;
+}
+module.exports.getGroupedUserPmts = getGroupedUserPmts;

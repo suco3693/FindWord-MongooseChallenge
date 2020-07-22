@@ -74,7 +74,6 @@ WordSearch.prototype.traverse = function (row, col, currentWord, currentNode, se
     }
     if (currentNode.isWord) {
         this.foundWords.add(currentWord);
-        removeWordFromTree(currentWord, this.wordTree);
     }
 
     seen.add(`${row}-${col}`);
@@ -214,7 +213,6 @@ function makeWordTree(dictionary) {
     return baseNode;
 }
 
-function removeWordFromTree(tree, word) {}
 module.exports = {
     findWords,
     makeWordTree,
