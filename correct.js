@@ -27,15 +27,23 @@ module.exports.pullFirstUser = pullFirstUser;
  * be stored in the first element of the result array, and so on...).
  */
 async function pullPaymentsForUsers(users) {
-    let result = [];
     if (!users) {
-        return result;
+        return [];
     }
-    for (let user of users) {
-        let payments = await models.payment.find({ user: user }).populate('user');
-        result.push(payments);
-    }
-    return result; // array of array with payments (the first array should contain payments for the first user)
+
+    let userIDS = users.reduce((acc, user) => {
+        acc[user.id] = [];
+        return acc;
+    }, {});
+
+    let payments = await models.payment.find({ user: { $in: users } }).populate('user');
+    payments.forEach((payment) => {
+        userIDS[payment.user._id].push(payment);
+    });
+    return users.reduce((acc, user) => {
+        acc.push(userIDS[user.id]);
+        return acc;
+    }, []); // array of array with payments (the first array should contain payments for the first user)
 }
 module.exports.pullPaymentsForUsers = pullPaymentsForUsers;
 
